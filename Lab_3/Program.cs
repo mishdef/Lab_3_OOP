@@ -138,144 +138,163 @@ namespace Lab_3
                 return;
             }
 
-            Array.Resize(ref cars, cars.Length + 1);
-            cars[cars.Length - 1] = new Car();
+            Console.WriteLine("Choose how to add a car:");
+            Console.WriteLine("1. Manually");
+            Console.WriteLine("2. Using string data");
 
-            while (true)
+            int choice = InputInt("Your choice: ", InputType.With, 1, 2);
+
+            if (choice == 1)
             {
-                string mark = InputString("Enter the cars mark: ");
 
-                try
-                {
-                    cars[cars.Length - 1].Mark = mark;
-                    break;
+                Array.Resize(ref cars, cars.Length + 1);
+                cars[cars.Length - 1] = new Car();
 
-                }
-                catch (ArgumentException ex)
+                while (true)
                 {
-                    Console.WriteLine(ex.Message);
+                    string mark = InputString("Enter the cars mark: ");
+
+                    try
+                    {
+                        cars[cars.Length - 1].Mark = mark;
+                        break;
+
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].Model = InputString("Enter the cars model: ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].Color = (Color)InputInt("Choose the cars color:\n0. Red\n1. Blue\n2. Green\n3. Black\n4. White\n5. Grey\nYour choice: ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    int numberOfDoors = InputInt("Enter the number of doors: ");
+                    try
+                    {
+                        cars[cars.Length - 1].NumberOfDoors = numberOfDoors;
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].HorsePower = (float)InputDouble("Enter the car's horse power: ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].Weight = (decimal)InputDouble("Enter the car's weight (kg): ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].Milage = InputDouble("Enter the car's milage (km): ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].FuelConsumptionPer100km = (double)InputDouble("Enter the car's fuel consumption (l/100km): ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].FuelCapacity = InputDouble("Enter the car's fuel capacity (l): ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        cars[cars.Length - 1].ProductionDate = InputDateTime("Enter the cars production date: ");
+                        break;
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+
+                Console.WriteLine($"Car {cars[cars.Length - 1].MarkAndModel} added successfully.");
             }
-
-            while (true)
+            if (choice == 2)
             {
-                try
-                {
-                    cars[cars.Length - 1].Model = InputString("Enter the cars model: ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
+                string data = InputString("Enter string data: ");
+                Array.Resize(ref cars, cars.Length + 1);
+                cars[cars.Length - 1] = new Car(data);
 
-            while (true)
-            {
-                try
-                {
-                    cars[cars.Length - 1].Color = (Color)InputInt("Choose the cars color:\n0. Red\n1. Blue\n2. Green\n3. Black\n4. White\n5. Grey\nYour choice: ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                Console.WriteLine("Car added successfully.");
+                return;
             }
-
-            while (true)
-            {
-                int numberOfDoors = InputInt("Enter the number of doors: ");
-                try
-                {
-                    cars[cars.Length - 1].NumberOfDoors = numberOfDoors;
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            while (true)
-            {
-                try
-                {
-                    cars[cars.Length - 1].HorsePower = (float)InputDouble("Enter the car's horse power: ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            while (true)
-            {
-                try
-                {
-                    cars[cars.Length - 1].Weight = (decimal)InputDouble("Enter the car's weight (kg): ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            while (true)
-            {
-                try
-                {
-                    cars[cars.Length - 1].Milage = InputDouble("Enter the car's milage (km): ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            while (true)
-            {
-                try
-                {
-                    cars[cars.Length - 1].FuelConsumptionPer100km = (double)InputDouble("Enter the car's fuel consumption (l/100km): ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            while (true)
-            {
-                try
-                {
-                    cars[cars.Length - 1].FuelCapacity = InputDouble("Enter the car's fuel capacity (l): ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            while (true)
-            {
-                try
-                {
-                    cars[cars.Length - 1].ProductionDate = InputDateTime("Enter the cars production date: ");
-                    break;
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            Console.WriteLine($"Car {cars[cars.Length - 1].MarkAndModel} added successfully.");
         }
 
         static string AddCar(string mark, string model, Color color, float horsePower, decimal weight, double milage, double fuelConsumption, double fuelCapacity, DateTime productiDate)
@@ -461,7 +480,9 @@ namespace Lab_3
                     Console.WriteLine("3. Speed up");
                     Console.WriteLine("4. Slow down");
                     Console.WriteLine("5. Ride the car");
-                    Console.WriteLine("6. Refuel\n");
+                    Console.WriteLine("6. Refuel");
+                    Console.WriteLine("7. ToExportString\n");
+
                     Console.WriteLine("0. Main menu\n");
 
                     int action = InputInt("BEHAVIOUR MENU: Choose how to interact: ", InputType.With, 0, 7);
@@ -495,6 +516,9 @@ namespace Lab_3
                             double maxAdd = carSel.FuelCapacity - carSel.CurrentFuel;
                             double fuel = InputDouble($"Fuel to add (max {maxAdd:F1}): ", InputType.With, 0, maxAdd);
                             Console.WriteLine(carSel.Refuel(fuel));
+                            break;
+                        case 7:
+                            Console.WriteLine("Car data: "+carSel.ToExportString());
                             break;
                         case 0:
                             Console.WriteLine("Returning to main menu...");

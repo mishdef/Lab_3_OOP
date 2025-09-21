@@ -2,6 +2,7 @@
 {
     internal class Car
     {
+        #region Fields
         string _mark;
         string _model;
 
@@ -17,7 +18,9 @@
 
         bool _isStarted = false;
         double _currentSpeed = 0;
+        #endregion
 
+        #region Properties
         public int NumberOfDoors 
         {
             get { return _numberOfDoors; }
@@ -164,6 +167,49 @@
         public string MarkAndModel
         {
             get { return Mark + " " + Model; }
+        }
+        #endregion
+
+        #region Constructors
+        public Car() { }
+
+        public Car(string strInfo)
+        {
+            var info = strInfo.Split('╬', StringSplitOptions.RemoveEmptyEntries).ToArray();
+            Mark = info[0];
+            Model = info[1];
+            Color = (Color)int.Parse(info[2]);
+            HorsePower = float.Parse(info[3]);
+            Weight = decimal.Parse(info[4]);
+            Milage = double.Parse(info[5]);
+            FuelCapacity = double.Parse(info[6]);
+            ProductionDate = DateTime.Parse(info[7]);
+            FuelConsumptionPer100km = double.Parse(info[8]);
+        }
+
+        public Car(string mark, string model, Color color = Color.White, float horsePower = 0, double weight = 0, double milage = 0, double fuelCapacity = 0, DateTime productionDate = new DateTime(), double fuelConsumptionPer100km = 0)
+        {
+            Mark = mark;
+            Model = model;
+            Color = color;
+            HorsePower = horsePower;
+            Weight = (decimal)weight;
+            Milage = milage;
+            FuelCapacity = fuelCapacity;
+            ProductionDate = productionDate;
+            FuelConsumptionPer100km = fuelConsumptionPer100km;
+        }
+        #endregion
+
+        #region Methods
+        public void ChangeSpeedCoupleTimes(int one = 0, int two = 0, int three = 0)  //???????????????????????????????????????
+        {
+            if (one > 0) SpeedUp(one);
+            else if (one < 0) SlowDown(-one);
+            if (two > 0) SpeedUp(two);
+            else if (two < 0) SlowDown(-two);
+            if (three > 0) SpeedUp(three);
+            else if (three < 0) SlowDown(-three);
         }
 
         public string StartEnige()
@@ -318,10 +364,16 @@
             }
         }
 
+        public string ToExportString()
+        {
+            return $"{Mark}╬{Model}╬{(int)Color}╬{HorsePower}╬{Weight}╬{Milage}╬{FuelCapacity}╬{ProductionDate}╬{FuelConsumptionPer100km}";
+        }
+
         public override string ToString()
         {
             return $"Car: {MarkAndModel}, Color: {Color}, HorsePower: {HorsePower}, Weight: {Weight}, Milage: {Milage:F2} km, CurrentSpeed: {CurrentSpeed:F2} km/h ," +
                   $"MaxSpeed: {MaxSpeed:F2} km/h, Fuel: {CurrentFuel:F2}/{FuelCapacity} liters. Fuel per 100km: {FuelConsumptionPer100km:F2} liters.";
         }
+        #endregion
     }
 }
