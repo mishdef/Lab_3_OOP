@@ -289,11 +289,29 @@ namespace Lab_3
             if (choice == 2)
             {
                 string data = InputString("Enter string data: ");
-                Array.Resize(ref cars, cars.Length + 1);
-                cars[cars.Length - 1] = new Car(data);
 
-                Console.WriteLine("Car added successfully.");
-                return;
+                Car temp = null;
+
+                try
+                {
+                    temp = new Car(data);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error creating car from string data: " + ex.Message);
+                    return;
+                }
+                if (temp != null)
+                {
+                    Array.Resize(ref cars, cars.Length + 1);
+                    cars[cars.Length - 1] = temp;
+
+                    Console.WriteLine("Car added successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Error creating car from string data.");
+                }
             }
         }
 
