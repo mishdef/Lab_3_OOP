@@ -337,7 +337,7 @@
                 return "Out of fuel! The car has stopped. Please refuel.";
             }
 
-            double fuelConsumed = CalculateFuelConsumption(distanceDrivenKM); //new
+            double fuelConsumed = CalculateFuelConsumption(distanceDrivenKM);
 
             double timeInMinutes = (distanceDrivenKM / _currentSpeed) * 60.0; //new
 
