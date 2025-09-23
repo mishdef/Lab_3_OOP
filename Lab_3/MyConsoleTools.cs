@@ -1,4 +1,12 @@
-﻿namespace MyFunctions
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MyFunctions
 {
 
     public static class MessageBox
@@ -6,48 +14,68 @@
         public enum Buttons { Ok, YesNo, None }
         public enum Button { Ok, Yes, No, None }
 
-        private const int MIN_CONTENT_WIDTH = 20;
-        private const int PADDING_HORIZONTAL_TEXT = 2;
+        public static ConsoleColor SelectedButtonBgColor = ConsoleColor.DarkBlue;
+        public static ConsoleColor SelectedButtonFgColor = ConsoleColor.White;
+        public static ConsoleColor UnselectedButtonBgColor = ConsoleColor.Black;
+        public static ConsoleColor UnselectedButtonFgColor = ConsoleColor.Gray;
+        public static ConsoleColor ButtonDividerColor = ConsoleColor.DarkGray;
+
+        public static ConsoleColor HeaderFgColor = ConsoleColor.White;
+        public static ConsoleColor HeaderBgColor = ConsoleColor.Black;
+        public static char HeaderFillChar = '░';
+        public static string OkButtonText = "Ok (Enter)";
+        public static string YesButtonText = " Yes (y)";
+        public static string NoButtonText = " No (n)";
+        public static string YesNoDividerString = " | ";
+        public static string OkResultText = " -> Ok";
+        public static string YesResultText = " -> Yes";
+        public static string NoResultText = " -> No";
+
+        public static int MinContentWidth = 20;
+        public static int PaddingHorizontalText = 2;
 
         public static Button Show(string message, string header = "Message", Buttons buttons = Buttons.None)
         {
             string actualHeader = " " + header.ToUpper() + " ";
-            string actualButtonsString = ButtonsToString(buttons);
 
             int maxContentLength = message.Length;
             maxContentLength = Math.Max(maxContentLength, actualHeader.Length);
-            if (actualButtonsString != null)
+
+            if (buttons == Buttons.Ok)
             {
-                maxContentLength = Math.Max(maxContentLength, actualButtonsString.Length);
+                maxContentLength = Math.Max(maxContentLength, OkButtonText.Length);
+            }
+            else if (buttons == Buttons.YesNo)
+            {
+                maxContentLength = Math.Max(maxContentLength, YesButtonText.Length + NoButtonText.Length + YesNoDividerString.Length);
             }
 
-            int contentWidth = Math.Max(MIN_CONTENT_WIDTH, maxContentLength + PADDING_HORIZONTAL_TEXT);
+            int contentWidth = Math.Max(MinContentWidth, maxContentLength + PaddingHorizontalText);
 
             DrawHorizontalLine('┏', '━', '┓', contentWidth);
 
-            Console.Write($"┃{CenterString(actualHeader, contentWidth, '░')}┃\n");
+            Console.Write("┃");
+            Console.BackgroundColor = HeaderBgColor;
+            Console.ForegroundColor = HeaderFgColor;
+            Console.Write(CenterString(actualHeader, contentWidth, HeaderFillChar));
+            Console.ResetColor();
+            Console.Write("┃\n");
 
             DrawHorizontalLine('┣', '━', '┫', contentWidth);
 
             Console.Write($"┃{message.PadRight(contentWidth)}┃\n");
 
-            if (actualButtonsString != null)
+            if (buttons != Buttons.None)
             {
                 DrawHorizontalLine('┣', '━', '┫', contentWidth);
+                int buttonRowStartCursorTop = Console.CursorTop;
 
-                Console.Write($"┃{CenterString(actualButtonsString, contentWidth, ' ')}┃\n");
+                return GetChar(buttons, contentWidth, buttonRowStartCursorTop);
             }
 
             DrawHorizontalLine('┗', '━', '┛', contentWidth);
 
-            if (buttons == Buttons.None)
-            {
-                return Button.None;
-            }
-            else
-            {
-                return GetChar(buttons);
-            }
+            return Button.None;
         }
 
         private static void DrawHorizontalLine(char leftCorner, char fillChar, char rightCorner, int length)
@@ -91,76 +119,200 @@
             Console.Write("┛\n");
         }
 
-        private static Button GetChar(Buttons buttons)
+        private static Button GetChar(Buttons buttons, int contentWidth, int buttonRowStartCursorTop)
         {
             Console.CursorVisible = false;
+            Button resultButton = Button.None;
+
             try
             {
                 if (buttons == Buttons.Ok)
                 {
+                    Console.SetCursorPosition(0, buttonRowStartCursorTop);
+                    Console.Write($"┃{CenterString(OkButtonText, contentWidth, ' ')}┃\n");
+                    DrawHorizontalLine('┗', '━', '┛', contentWidth);
+
                     do
                     {
                         ConsoleKeyInfo keyInfo = Console.ReadKey(true);
                         if (keyInfo.Key == ConsoleKey.Enter)
                         {
-                            Console.WriteLine();
-                            return Button.Ok;
+                            resultButton = Button.Ok;
+                            break;
+                        }
+                        else
+                        {
+                            Menu.PerformBeep();
                         }
                     } while (true);
+
+                    Console.WriteLine(OkResultText);
+                    return resultButton;
                 }
-                if (buttons == Buttons.YesNo)
+                else if (buttons == Buttons.YesNo)
                 {
+                    int selectedButtonIndex = 0;
+                    string[] buttonTexts = { YesButtonText, NoButtonText };
+
+                    DrawInteractiveButtons(buttonTexts, selectedButtonIndex, contentWidth, buttonRowStartCursorTop);
+                    Console.Write("\n");
+                    DrawHorizontalLine('┗', '━', '┛', contentWidth);
+
                     do
                     {
                         ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-                        char key = char.ToLower(keyInfo.KeyChar);
 
-                        if (key == 'y' || key == 'н')
+                        int oldSelectedButtonIndex = selectedButtonIndex;
+
+                        if (keyInfo.Key == ConsoleKey.LeftArrow)
                         {
-                            Console.WriteLine(" -> Yes");
-                            return Button.Yes;
+                            if (selectedButtonIndex > 0)
+                            {
+                                selectedButtonIndex--;
+                            }
+                            else
+                            {
+                                Menu.PerformBeep();
+                            }
                         }
-                        if (key == 'n' || key == 'т')
+                        else if (keyInfo.Key == ConsoleKey.RightArrow)
                         {
-                            Console.WriteLine(" -> No");
-                            return Button.No;
+                            if (selectedButtonIndex < buttonTexts.Length - 1)
+                            {
+                                selectedButtonIndex++;
+                            }
+                            else
+                            {
+                                Menu.PerformBeep();
+                            }
                         }
+                        else if (keyInfo.Key == ConsoleKey.Enter)
+                        {
+                            resultButton = selectedButtonIndex == 0 ? Button.Yes : Button.No;
+                            break;
+                        }
+                        else if (char.ToLower(keyInfo.KeyChar) == 'y' || char.ToLower(keyInfo.KeyChar) == 'н')
+                        {
+                            if (selectedButtonIndex != 0)
+                            {
+                                selectedButtonIndex = 0;
+                                DrawInteractiveButtons(buttonTexts, selectedButtonIndex, contentWidth, buttonRowStartCursorTop);
+                                Console.SetCursorPosition(0, buttonRowStartCursorTop + 1);
+                                DrawHorizontalLine('┗', '━', '┛', contentWidth);
+                            }
+                            resultButton = Button.Yes;
+                            break;
+                        }
+                        else if (char.ToLower(keyInfo.KeyChar) == 'n' || char.ToLower(keyInfo.KeyChar) == 'т')
+                        {
+                            if (selectedButtonIndex != 1)
+                            {
+                                selectedButtonIndex = 1;
+                                DrawInteractiveButtons(buttonTexts, selectedButtonIndex, contentWidth, buttonRowStartCursorTop);
+                                Console.SetCursorPosition(0, buttonRowStartCursorTop + 1);
+                                DrawHorizontalLine('┗', '━', '┛', contentWidth);
+                            }
+                            resultButton = Button.No;
+                            break;
+                        }
+                        else
+                        {
+                            Menu.PerformBeep();
+                        }
+
+                        if (selectedButtonIndex != oldSelectedButtonIndex)
+                        {
+                            DrawInteractiveButtons(buttonTexts, selectedButtonIndex, contentWidth, buttonRowStartCursorTop);
+                            Console.SetCursorPosition(0, buttonRowStartCursorTop + 1);
+                            DrawHorizontalLine('┗', '━', '┛', contentWidth);
+                        }
+
                     } while (true);
+
+                    DrawInteractiveButtons(buttonTexts, -1, contentWidth, buttonRowStartCursorTop);
+                    Console.SetCursorPosition(0, buttonRowStartCursorTop + 1);
+                    DrawHorizontalLine('┗', '━', '┛', contentWidth);
+
+                    if (resultButton == Button.Yes)
+                    {
+                        Console.WriteLine(YesResultText);
+                    }
+                    else if (resultButton == Button.No)
+                    {
+                        Console.WriteLine(NoResultText);
+                    }
+                    return resultButton;
                 }
             }
             finally
             {
                 Console.CursorVisible = true;
+                Console.ResetColor();
             }
             return Button.None;
         }
 
-        private static string ButtonsToString(Buttons buttons)
+        private static void DrawInteractiveButtons(string[] buttonTexts, int selectedIndex, int contentWidth, int cursorTop)
         {
-            switch (buttons)
+            Console.SetCursorPosition(0, cursorTop);
+            Console.Write("┃");
+
+            int totalButtonsTextLength = buttonTexts.Sum(s => s.Length) + (buttonTexts.Length > 1 ? YesNoDividerString.Length : 0);
+            int paddingLeft = (contentWidth - totalButtonsTextLength) / 2;
+            int paddingRight = contentWidth - totalButtonsTextLength - paddingLeft;
+
+            Console.Write(new string(' ', paddingLeft));
+
+            for (int i = 0; i < buttonTexts.Length; i++)
             {
-                case Buttons.Ok:
-                    return "Ok (Enter)";
-                case Buttons.YesNo:
-                    return "Yes (Y) / No (N)";
-                case Buttons.None:
-                default:
-                    return null;
+                if (i == selectedIndex && selectedIndex != -1)
+                {
+                    Console.BackgroundColor = SelectedButtonBgColor;
+                    Console.ForegroundColor = SelectedButtonFgColor;
+                }
+                else
+                {
+                    Console.BackgroundColor = UnselectedButtonBgColor;
+                    Console.ForegroundColor = UnselectedButtonFgColor;
+                }
+                Console.Write(buttonTexts[i]);
+
+                if (i < buttonTexts.Length - 1)
+                {
+                    Console.BackgroundColor = UnselectedButtonBgColor;
+                    Console.ForegroundColor = ButtonDividerColor;
+                    Console.Write(YesNoDividerString);
+                }
             }
+
+            Console.ResetColor();
+            Console.Write(new string(' ', paddingRight));
+            Console.Write("┃");
         }
     }
 
     public static class Menu
     {
-        public static int DisplayMenu(string header, string[] items, bool showHowToUse = true)
+        public static ConsoleColor SelectedItemColor = ConsoleColor.Yellow;
+        public static string SelectionArrow = "-> ";
+        public static bool EnableBeepOnError = true;
+
+        public static void PerformBeep()
         {
-            Console.Clear();
+            if (EnableBeepOnError)
+            {
+                Console.Beep();
+            }
+        }
+
+        public static int DisplayMenu(string header, string[] items, bool showHowToUse = true, bool allowLooping = false)
+        {
             MessageBox.BoxItem($" {header.ToUpper()} ");
 
             int menuStartLine = Console.CursorTop;
 
             int selectedIndex = 0;
-            int lastIndex = 0;
+            int lastDigitPressedIndex = -1;
 
             Console.CursorVisible = false;
 
@@ -169,61 +321,86 @@
                 Console.SetCursorPosition(0, menuStartLine + i);
                 if (i == selectedIndex)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Write("-> ");
+                    Console.ForegroundColor = SelectedItemColor;
+                    Console.Write(SelectionArrow);
                 }
                 else
                 {
                     Console.ResetColor();
                     Console.Write("   ");
                 }
-                Console.WriteLine($"{i+1}. {items[i]}");
+                Console.WriteLine($"{i + 1}. {items[i]}");
             }
             Console.ResetColor();
-
             if (showHowToUse)
             {
                 Console.SetCursorPosition(0, menuStartLine + items.Length);
                 Console.WriteLine("\nUse arrow keys to navigate, Enter to select.");
                 Console.WriteLine("Or press the number of menu item.");
+                if (items.Length > 9)
+                {
+                    Console.WriteLine("Selection by number is disabled for more than 9 items.");
+                }
+                else
+                {
+                    Console.WriteLine("Or press the number of menu item.");
+                }
                 Console.WriteLine("You can also press Esc to exit.");
                 Console.WriteLine("Press Esc to exit.");
             }
-
             int oldSelectedIndex;
+
+            int finalCursorPositionAfterMenu = Console.CursorTop;
 
             do
             {
-                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-
                 oldSelectedIndex = selectedIndex;
+
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
 
                 if (keyInfo.Key == ConsoleKey.UpArrow)
                 {
-                    if (IsBordrerCanBeCrossed(keyInfo.Key, selectedIndex, items.Length))
+                    if (selectedIndex == 0)
+                    {
+                        if (allowLooping)
+                        {
+                            selectedIndex = items.Length - 1;
+                        }
+                        else
+                        {
+                            PerformBeep();
+                        }
+                    }
+                    else
                     {
                         selectedIndex--;
                     }
-                    else
-                    {
-                        Console.Beep();
-                    }
+                    lastDigitPressedIndex = -1;
                 }
                 else if (keyInfo.Key == ConsoleKey.DownArrow)
                 {
-                    if (IsBordrerCanBeCrossed(keyInfo.Key, selectedIndex, items.Length))
+                    if (selectedIndex == items.Length - 1)
                     {
-                        selectedIndex++;
+                        if (allowLooping)
+                        {
+                            selectedIndex = 0;
+                        }
+                        else
+                        {
+                            PerformBeep();
+                        }
                     }
                     else
                     {
-                        Console.Beep();
+                        selectedIndex++;
                     }
+                    lastDigitPressedIndex = -1;
                 }
                 else if (keyInfo.Key == ConsoleKey.Enter)
                 {
                     Console.CursorVisible = true;
-                    Console.Clear();
+                    Console.SetCursorPosition(0, finalCursorPositionAfterMenu);
+                    Console.WriteLine();
                     return selectedIndex;
                 }
                 else if (keyInfo.Key == ConsoleKey.Escape)
@@ -234,26 +411,41 @@
                 }
                 else if (char.IsDigit(keyInfo.KeyChar))
                 {
-                    int number = (int)char.GetNumericValue(keyInfo.KeyChar) - 1;
-                    if (number >= 0 && number < items.Length)
+                    if (items.Length > 9)
                     {
-                        selectedIndex = number;
-                        if (lastIndex == number)
-                        {
-                            Console.CursorVisible = true;
-                            Console.Clear();
-                            return selectedIndex;
-                        }
-                        lastIndex = number;
+                        PerformBeep();
+                        lastDigitPressedIndex = -1;
                     }
-                    else
+                    else 
                     {
-                        Console.Beep();
+                        int number = (int)char.GetNumericValue(keyInfo.KeyChar) - 1;
+
+                        if (number >= 0 && number < items.Length)
+                        {
+                            if (selectedIndex == number)
+                            {
+                                Console.CursorVisible = true;
+                                Console.SetCursorPosition(0, finalCursorPositionAfterMenu);
+                                Console.WriteLine();
+                                return selectedIndex;
+                            }
+                            else
+                            {
+                                selectedIndex = number;
+                                lastDigitPressedIndex = number;
+                            }
+                        }
+                        else
+                        {
+                            PerformBeep();
+                            lastDigitPressedIndex = -1;
+                        }
                     }
                 }
                 else
                 {
-                    Console.Beep();
+                    PerformBeep();
+                    lastDigitPressedIndex = -1;
                 }
 
                 if (selectedIndex != oldSelectedIndex)
@@ -261,43 +453,16 @@
                     Console.SetCursorPosition(0, menuStartLine + oldSelectedIndex);
                     Console.ResetColor();
                     Console.Write("   ");
-                    Console.Write($"{oldSelectedIndex+1}. {items[oldSelectedIndex]}");
+                    Console.Write($"{oldSelectedIndex + 1}. {items[oldSelectedIndex]}");
 
                     Console.SetCursorPosition(0, menuStartLine + selectedIndex);
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Write("-> ");
-                    Console.Write($"{selectedIndex+1}. {items[selectedIndex]}");
+                    Console.ForegroundColor = SelectedItemColor;
+                    Console.Write(SelectionArrow);
+                    Console.Write($"{selectedIndex + 1}. {items[selectedIndex]}");
                     Console.ResetColor();
                 }
 
             } while (true);
-        }
-
-        public static bool IsBordrerCanBeCrossed(ConsoleKey key, int corentIndex, int countMenuItems)
-        {
-            if (key == ConsoleKey.UpArrow)
-            {
-                if (corentIndex > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            if (key == ConsoleKey.DownArrow)
-            {
-                if (corentIndex < countMenuItems - 1)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            return false;
         }
     }
 
@@ -464,13 +629,13 @@
                 try
                 {
                     Console.Write(prompt);
-                    if (!DateTime.TryParse(Console.ReadLine(), out dateTime)) throw new FormatException(); 
+                    if (!DateTime.TryParse(Console.ReadLine(), out dateTime)) throw new FormatException();
 
                     if (dateTime < min || dateTime > max)
                     {
                         throw new ArgumentOutOfRangeException();
                     }
-                    break; 
+                    break;
                 }
                 catch (FormatException)
                 {

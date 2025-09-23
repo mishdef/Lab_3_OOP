@@ -72,12 +72,12 @@ namespace Lab_3
 
             var seedDataItems = new[]
             {
-                new { Mark = "Audi", Model = "A4", Color = Color.Red, HorsePower = 150f, Weight = 1550m, Milage = 12000.0, FuelConsumptionPer100km = 10.0, FuelCapacity = 60.0, ProductionDate = new DateTime(2022, 1, 1) },
-                new { Mark = "Audi", Model = "A6", Color = Color.Black, HorsePower = 250f, Weight = 1800m, Milage = 0.0, FuelConsumptionPer100km = 14.0, FuelCapacity = 70.0, ProductionDate = new DateTime(2020, 6, 12) },
-                new { Mark = "BMW", Model = "M3", Color = Color.Blue, HorsePower = 420f, Weight = 1600m, Milage = 85000.0, FuelConsumptionPer100km = 16.0, FuelCapacity = 63.0, ProductionDate = new DateTime(2008, 5, 17) },
-                new { Mark = "Mini", Model = "Cooper", Color = Color.Green, HorsePower = 40f, Weight = 650m, Milage = 0.0, FuelConsumptionPer100km = 6.0, FuelCapacity = 30.0, ProductionDate = new DateTime(1995, 3, 4) },
-                new { Mark = "Ford", Model = "F-150", Color = Color.Black, HorsePower = 400f, Weight = 2500m, Milage = 25000.0, FuelConsumptionPer100km = 24.0, FuelCapacity = 120.0, ProductionDate = new DateTime(2021, 1, 1) }
-            };
+            new { Mark = "Audi", Model = "A4", Color = Color.Red, HorsePower = 150f, Weight = 1550m, Milage = 12000.0, FuelConsumptionPer100km = 10.0, FuelCapacity = 60.0, ProductionDate = new DateTime(2022, 1, 1), NumberOfDoors = 4 },
+            new { Mark = "Audi", Model = "A6", Color = Color.Black, HorsePower = 250f, Weight = 1800m, Milage = 0.0, FuelConsumptionPer100km = 14.0, FuelCapacity = 70.0, ProductionDate = new DateTime(2020, 6, 12), NumberOfDoors = 4 },
+            new { Mark = "BMW", Model = "M3", Color = Color.Blue, HorsePower = 420f, Weight = 1600m, Milage = 85000.0, FuelConsumptionPer100km = 16.0, FuelCapacity = 63.0, ProductionDate = new DateTime(2008, 5, 17), NumberOfDoors = 2 },
+            new { Mark = "Mini", Model = "Cooper", Color = Color.Green, HorsePower = 40f, Weight = 650m, Milage = 0.0, FuelConsumptionPer100km = 6.0, FuelCapacity = 30.0, ProductionDate = new DateTime(1995, 3, 4), NumberOfDoors = 3 },
+            new { Mark = "Ford", Model = "F-150", Color = Color.Black, HorsePower = 400f, Weight = 2500m, Milage = 25000.0, FuelConsumptionPer100km = 24.0, FuelCapacity = 120.0, ProductionDate = new DateTime(2021, 1, 1), NumberOfDoors = 4 }
+        };
 
             int initialCarsCount = cars.Length;
             int carsAddedCount = 0;
@@ -86,7 +86,7 @@ namespace Lab_3
             {
                 if (cars.Length < maxCapacity)
                 {
-                    AddCar(item.Mark, item.Model, item.Color, item.HorsePower, item.Weight, item.Milage, item.FuelConsumptionPer100km, item.FuelCapacity, item.ProductionDate);
+                    AddCar(item.Mark, item.Model, item.Color, item.HorsePower, item.Weight, item.Milage, item.FuelConsumptionPer100km, item.FuelCapacity, item.ProductionDate, item.NumberOfDoors);
                     carsAddedCount++;
                 }
                 else
@@ -141,8 +141,9 @@ namespace Lab_3
             Console.WriteLine("Choose how to add a car:");
             Console.WriteLine("1. Manually");
             Console.WriteLine("2. Using string data");
+            Console.WriteLine("3. With minimal parameters (Mark, Model, Color)");
 
-            int choice = InputInt("Your choice: ", InputType.With, 1, 2);
+            int choice = InputInt("Your choice: ", InputType.With, 1, 3);
 
             if (choice == 1)
             {
@@ -286,7 +287,7 @@ namespace Lab_3
 
                 Console.WriteLine($"Car {cars[cars.Length - 1].MarkAndModel} added successfully.");
             }
-            if (choice == 2)
+            else if (choice == 2)
             {
                 string data = InputString("Enter string data: ");
 
@@ -313,9 +314,34 @@ namespace Lab_3
                     Console.WriteLine("Error creating car from string data.");
                 }
             }
+            else if (choice == 3)
+            {
+                string mark = InputString("Enter the cars mark: ");
+                string model = InputString("Enter the cars model: ");
+                Color color = (Color)InputInt("Choose the cars color:\n0. Red\n1. Blue\n2. Green\n3. Black\n4. White\n5. Grey\nYour choice: ", InputType.With, 0, 5);
+
+                Car temp = null;
+
+                try
+                {
+                    temp = new Car(mark, model, color);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error creating car: " + ex.Message);
+                    return;
+                }
+                if (temp != null)
+                {
+                    Array.Resize(ref cars, cars.Length + 1);
+                    cars[cars.Length - 1] = temp;
+
+                    Console.WriteLine("Car added successfully with default parameters");
+                }
+            }
         }
 
-        static string AddCar(string mark, string model, Color color, float horsePower, decimal weight, double milage, double fuelConsumption, double fuelCapacity, DateTime productiDate)
+        static string AddCar(string mark, string model, Color color, float horsePower, decimal weight, double milage, double fuelConsumption, double fuelCapacity, DateTime productiDate, int numberOfDoors)
         {
             Array.Resize(ref cars, cars.Length + 1);
 
@@ -329,12 +355,12 @@ namespace Lab_3
                 Milage = milage,
                 FuelConsumptionPer100km = fuelConsumption,
                 FuelCapacity = fuelCapacity,
-                ProductionDate = productiDate
+                ProductionDate = productiDate,
+                NumberOfDoors = numberOfDoors
             };
 
             return "Car added successfully";
         }
-
 
         static void ShowAllCars()
         {
@@ -483,7 +509,6 @@ namespace Lab_3
             MessageBox.Show($"Removed the following cars: {removedNamesString}. Total cars remaining: {cars.Length}");
         }
 
-
         static void InteractWithCar(Car carSel)
         {
             do
@@ -495,15 +520,17 @@ namespace Lab_3
                     PrintCarLine(0, carSel);
                     Console.WriteLine("1. Start engine");
                     Console.WriteLine("2. Stop engine");
-                    Console.WriteLine("3. Speed up");
-                    Console.WriteLine("4. Slow down");
-                    Console.WriteLine("5. Ride the car");
-                    Console.WriteLine("6. Refuel");
-                    Console.WriteLine("7. ToExportString\n");
+                    Console.WriteLine("3. Speed up (default) +10km/h");
+                    Console.WriteLine("4. Speed up (custom increment) +Xkm/h");
+                    Console.WriteLine("5. Speed up (custom increment with turbo) +Xkm/h * 1.5");
+                    Console.WriteLine("6. Slow down");
+                    Console.WriteLine("7. Ride the car");
+                    Console.WriteLine("8. Refuel");
+                    Console.WriteLine("9. ToExportString\n");
 
                     Console.WriteLine("0. Main menu\n");
 
-                    int action = InputInt("BEHAVIOUR MENU: Choose how to interact: ", InputType.With, 0, 7);
+                    int action = InputInt("BEHAVIOUR MENU: Choose how to interact: ", InputType.With, 0, 9);
 
                     switch (action)
                     {
@@ -514,18 +541,25 @@ namespace Lab_3
                             Console.WriteLine(carSel.StopEngine());
                             break;
                         case 3:
-                            double inc = InputDouble("Speed increment (km/h): ", InputType.With, 0, 300);
-                            Console.WriteLine(carSel.SpeedUp(inc));
+                            Console.WriteLine(carSel.SpeedUp());
                             break;
                         case 4:
-                            double dec = InputDouble("Speed decrement (km/h): ", InputType.With, 0, 300);
-                            Console.WriteLine(carSel.SlowDown(dec));
+                            double inc = InputDouble("Speed increment (km/h): ");
+                            Console.WriteLine(carSel.SpeedUp(inc));
                             break;
                         case 5:
-                            double distance = InputDouble("Distance to drive (km): ", InputType.With, 0, 10000);
-                            Console.WriteLine(carSel.RideCar(distance));
+                            double incTurbo = InputDouble("Speed increment (km/h): ");
+                            Console.WriteLine(carSel.SpeedUp(incTurbo, true));
                             break;
                         case 6:
+                            double dec = InputDouble("Speed decrement (km/h): ");
+                            Console.WriteLine(carSel.SlowDown(dec));
+                            break;
+                        case 7:
+                            double distance = InputDouble("Distance to drive (km): ");
+                            Console.WriteLine(carSel.RideCar(distance));
+                            break;
+                        case 8:
                             if (carSel.CurrentFuel >= carSel.FuelCapacity)
                             {
                                 Console.WriteLine("Tank is full.");
@@ -535,8 +569,8 @@ namespace Lab_3
                             double fuel = InputDouble($"Fuel to add (max {maxAdd:F1}): ", InputType.With, 0, maxAdd);
                             Console.WriteLine(carSel.Refuel(fuel));
                             break;
-                        case 7:
-                            Console.WriteLine("Car data: "+carSel.ToExportString());
+                        case 9:
+                            Console.WriteLine("Car data: " + carSel.ToExportString());
                             break;
                         case 0:
                             Console.WriteLine("Returning to main menu...");
@@ -549,7 +583,6 @@ namespace Lab_3
                 }
             } while (true);
         }
-
 
         static void PrintHeader()
         {
