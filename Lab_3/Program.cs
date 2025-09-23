@@ -142,8 +142,9 @@ namespace Lab_3
             Console.WriteLine("1. Manually");
             Console.WriteLine("2. Using string data");
             Console.WriteLine("3. With minimal parameters (Mark, Model, Color)");
+            Console.WriteLine("4. With all parameters(checks input data after input)");
 
-            int choice = InputInt("Your choice: ", InputType.With, 1, 3);
+            int choice = InputInt("Your choice: ", InputType.With, 1, 4);
 
             if (choice == 1)
             {
@@ -325,6 +326,38 @@ namespace Lab_3
                 try
                 {
                     temp = new Car(mark, model, color);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error creating car: " + ex.Message);
+                    return;
+                }
+                if (temp != null)
+                {
+                    Array.Resize(ref cars, cars.Length + 1);
+                    cars[cars.Length - 1] = temp;
+
+                    Console.WriteLine("Car added successfully with default parameters");
+                }
+            }
+            else if (choice == 4)
+            {
+                string mark = InputString("Enter the cars mark: ");
+                string model = InputString("Enter the cars model: ");
+                Color color = (Color)InputInt("Choose the cars color:\n0. Red\n1. Blue\n2. Green\n3. Black\n4. White\n5. Grey\nYour choice: ");
+                float horsePower = (float)InputDouble("Enter the car's horse power: ");
+                decimal weight = (decimal)InputDouble("Enter the car's weight (kg): ");
+                double milage = InputDouble("Enter the car's milage (km): ");
+                double fuelConsumption = (double)InputDouble("Enter the car's fuel consumption (l/100km): ");
+                double fuelCapacity = InputDouble("Enter the car's fuel capacity (l): ");
+                DateTime productiDate = InputDateTime("Enter the cars production date: ");
+                int numberOfDoors = InputInt("Enter the number of doors: ");
+
+                Car temp = null;
+
+                try
+                {
+                    temp = new Car(mark, model, color, horsePower, weight, milage, fuelCapacity, productiDate, fuelConsumption, numberOfDoors);
                 }
                 catch (Exception ex)
                 {
